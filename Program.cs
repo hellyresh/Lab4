@@ -6,32 +6,86 @@ using System.Threading.Tasks;
 
 namespace Lab4_Sokolova_BD
 {
+    /// <summary>
+    /// Интерфейс с методами баз данных
+    /// </summary>
     interface Database
     {
+        /// <summary>
+        /// Метод выборки
+        /// </summary>
         void Select();
+
+        /// <summary>
+        /// Метод вставки
+        /// </summary>
         void Insert();
+
+        /// <summary>
+        /// Метод обновления в таблице
+        /// </summary>
         void Update();
+
+        /// <summary>
+        /// Метод удаления в таблице
+        /// </summary>
         void Delete();
+
+        /// <summary>
+        /// Метод удаления в схеме
+        /// </summary>
         void Drop();
+
+        /// <summary>
+        /// Метод создания
+        /// </summary>
         void Create();
+
+        /// <summary>
+        /// Метод обновления в схеме
+        /// </summary>
         void Alter();
+
+        /// <summary>
+        /// Метод подтверждения транзакций
+        /// </summary>
         void Commit();
+
+        /// <summary>
+        /// Метод отката транзакций
+        /// </summary>
         void Rollback();
 
     }
 
+    /// <summary>
+    /// Класс управления
+    /// </summary>
     class Client
     {
+        /// <summary>
+        /// База данных
+        /// </summary>
         Database mydb;
+
+        /// <summary>
+        /// Конструктор класса
+        /// </summary>
+        /// <param name="db">База данных</param>
         public Client(Database db)
         {
             mydb = db;
         }
 
-        public void GetOperation(string dbName)
+
+        /// <summary>
+        /// Функция, считывающая нужный метод и вызывающая его
+        /// </summary>
+        /// <param name="opName">Название базы данных</param>
+        public void GetOperation(string opName)
         {
-            dbName = dbName.ToLower();
-            switch (dbName)
+            opName = opName.ToLower();
+            switch (opName)
             {
                 case "select":
                     mydb.Select();
@@ -60,10 +114,16 @@ namespace Lab4_Sokolova_BD
                 case "rollback":
                     mydb.Rollback();
                     break;
+                default:
+                    throw new ArgumentException($"Ошибка! Операции {opName} не существует");
 
             }
         }
     }
+
+    /// <summary>
+    /// Класс базы данных Oracle
+    /// </summary>
     class Oracle : Database
     {
         public void Select()
@@ -104,6 +164,9 @@ namespace Lab4_Sokolova_BD
         }
     }
 
+    /// <summary>
+    /// Класс базы данных MySQL
+    /// </summary>
     class MySQL : Database
     {
         public void Select()
@@ -144,6 +207,9 @@ namespace Lab4_Sokolova_BD
         }
     }
 
+    /// <summary>
+    /// Класс базы данных PostgreSQL
+    /// </summary>
     class PostgreSQL : Database
     {
         public void Select()
@@ -186,8 +252,52 @@ namespace Lab4_Sokolova_BD
 
     class Program
     {
+        /// <summary>
+        /// Функция, считывающая название базы данных и создающая соответствующий объект
+        /// </summary>
+        /// <param name="dbName">Название базы данных</param>
+        public static Database GetDatabase(string dbName)
+        {
+            Database db;
+            switch (dbName.ToLower())
+            {
+                case "mysql":
+                    db = new MySQL();
+                    break;
+                case "oracle":
+                    db = new Oracle();
+                    break;
+                case "postgre":
+                    db = new PostgreSQL();
+                    break;
+                default:
+                    throw new ArgumentException($"Ошибка! Базы данных {dbName} не существует");
+            }
+            return db;
+        }
         static void Main(string[] args)
         {
+            try
+            {
+                string input = Console.ReadLine();
+                string[] inputArr = input.Split(' ');                
+                Client cl = new Client(GetDatabase(inputArr[0].ToLower()));
+                string oper;
+                for (int i = 1; i < inputArr.Length; i++)
+                {
+                    oper = inputArr[i];
+                    cl.GetOperation(oper);
+                }
+                Console.ReadKey();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+                Console.ReadKey();
+                return;
+            }
+            
+
         }
     }
 }
